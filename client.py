@@ -1,11 +1,11 @@
 """A demonstration 'hub' that connects several devices."""
 from __future__ import annotations
 
-
 import asyncio
+import logging
 
 from homeassistant.core import HomeAssistant
-import logging
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -60,7 +60,7 @@ class Client:
     def set_total_compensated(self, val):
         """Set amount of kWh total compensated."""
         self._total_compensated = val
-    
+
     @property
     def online(self) -> float:
         """Client is online."""

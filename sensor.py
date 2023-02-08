@@ -1,13 +1,14 @@
 """Platform for offsetting client integration."""
 
-from homeassistant.const import (
-    DEVICE_CLASS_ENERGY,
-    ENERGY_KILO_WATT_HOUR,
-)
-from homeassistant.components.sensor import SensorStateClass, SensorEntityDescription, SensorEntity
+import logging
+
+from homeassistant.components.sensor import (SensorEntity,
+                                             SensorEntityDescription,
+                                             SensorStateClass)
+from homeassistant.const import DEVICE_CLASS_ENERGY, ENERGY_KILO_WATT_HOUR
 
 from .const import DOMAIN
-import logging
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -53,7 +54,6 @@ class SensorBase(SensorEntity):
 
 
 class ToCompensate(SensorBase):
-
     def __init__(self, client):
         """Initialize the sensor."""
         super().__init__(client)
@@ -69,7 +69,7 @@ class ToCompensate(SensorBase):
             native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
             device_class=DEVICE_CLASS_ENERGY,
             state_class=SensorStateClass.MEASUREMENT,
-            icon="mdi:leaf-circle-outline"
+            icon="mdi:leaf-circle-outline",
         )
         self._state = 0
 
@@ -81,7 +81,6 @@ class ToCompensate(SensorBase):
 
 
 class LastCompensationDate(SensorBase):
-
     def __init__(self, client):
         """Initialize the sensor."""
         super().__init__(client)
@@ -91,11 +90,7 @@ class LastCompensationDate(SensorBase):
 
         # The name of the entity
         self._attr_name = f"Last compensation date"
-        self.entity_description = SensorEntityDescription(
-            key="setpoint",
-            name=self._attr_name,
-            icon="mdi:calendar"
-        )
+        self.entity_description = SensorEntityDescription(key="setpoint", name=self._attr_name, icon="mdi:calendar")
         self._state = "-"
 
     @property
@@ -104,8 +99,8 @@ class LastCompensationDate(SensorBase):
 
         return self._client.last_compensation_date
 
-class TotalCompensated(SensorBase):
 
+class TotalCompensated(SensorBase):
     def __init__(self, client):
         """Initialize the sensor."""
         super().__init__(client)
@@ -121,7 +116,7 @@ class TotalCompensated(SensorBase):
             native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
             device_class=DEVICE_CLASS_ENERGY,
             state_class=SensorStateClass.MEASUREMENT,
-            icon="mdi:leaf-circle"
+            icon="mdi:leaf-circle",
         )
         self._state = 0
 

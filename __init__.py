@@ -9,20 +9,15 @@ from homeassistant.helpers.typing import ConfigType
 from robonomicsinterface import Account, Liability, web_3_auth
 from substrateinterface import KeypairType
 
-from .const import (
-    CONF_ADMIN_SEED,
-    CONF_IPFS_GATEWAY_AUTH,
-    CONF_IPFS_GATEWAY_PWD,
-    CONF_IPFS_GW,
-    CONF_IS_W3GW,
-    DOMAIN,
-    IPFS_GW,
-    LAST_COMPENSATION_DATE_RESPONSE_TOPIC,
-    LIABILITY_REPORT_TOPIC,
-)
-from .utils.offsetting_client import send_offset_query, send_last_compensation_date_query
-from .utils.pubsub import parse_income_message, subscribe_response_topic_wrapper
 from .client import Client
+from .const import (CONF_ADMIN_SEED, CONF_IPFS_GATEWAY_AUTH,
+                    CONF_IPFS_GATEWAY_PWD, CONF_IPFS_GW, CONF_IS_W3GW, DOMAIN,
+                    IPFS_GW, LAST_COMPENSATION_DATE_RESPONSE_TOPIC,
+                    LIABILITY_REPORT_TOPIC)
+from .utils.offsetting_client import (send_last_compensation_date_query,
+                                      send_offset_query)
+from .utils.pubsub import (parse_income_message,
+                           subscribe_response_topic_wrapper)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -94,15 +89,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         domain="notify",
                         service="persistent_notification",
                         service_data=dict(
-                            message=f"Last compensated: {response['last_compensation_date'] or 'Never'}, to compensate: {response['kwh_to_compensate']} kWh.",
+                            message=f"Last compensated: {response['last_compensation_date'] or 'Never'}, "
+                                    f"to compensate: {response['kwh_to_compensate']} kWh.",
                             title="Got amount of kWh to compensate!",
                         ),
                     )
-                    hass.data[DOMAIN][entry.entry_id].set_to_compensate(response['kwh_to_compensate'])
-                    hass.data[DOMAIN][entry.entry_id].set_total_compensated(kwh - response['kwh_to_compensate'])
-                    hass.data[DOMAIN][entry.entry_id].set_last_compensation_date(response['last_compensation_date'] or 'Never')
+                    hass.data[DOMAIN][entry.entry_id].set_to_compensate(response["kwh_to_compensate"])
+                    hass.data[DOMAIN][entry.entry_id].set_total_compensated(kwh - response["kwh_to_compensate"])
+                    hass.data[DOMAIN][entry.entry_id].set_last_compensation_date(
+                        response["last_compensation_date"] or "Never"
+                    )
                     hass.data[DOMAIN][entry.entry_id].publish_updates()
-                    _LOGGER.debug(f"Updated {DOMAIN}.to_compensate with {response['kwh_to_compensate']}, {DOMAIN}.previous_compensation_date with {response['last_compensation_date'] or 'Never'}")
+                    _LOGGER.debug(
+                        f"Updated {DOMAIN}.to_compensate with {response['kwh_to_compensate']}, "
+                        f"{DOMAIN}.previous_compensation_date with {response['last_compensation_date'] or 'Never'}"
+                    )
                     return True
 
             resp_sub = asyncio.ensure_future(
@@ -152,12 +153,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                             domain="notify",
                             service="persistent_notification",
                             service_data=dict(
-                                message=f"Successfully compensated carbon footprint. See Robonomics Liability report {response['report']} for details.",
+                                message=f"Successfully compensated carbon footprint. "
+                                        f"See Robonomics Liability report {response['report']} for details.",
                                 title="Successful compensation!",
                             ),
                         )
                         hass.data[DOMAIN][entry.entry_id].set_to_compensate("Yet unknown")
-                        hass.data[DOMAIN][entry.entry_id].set_total_compensated(response['total'])
+                        hass.data[DOMAIN][entry.entry_id].set_total_compensated(response["total"])
                         hass.data[DOMAIN][entry.entry_id].set_last_compensation_date(f"{date.today()}")
                         hass.data[DOMAIN][entry.entry_id].publish_updates()
                     else:
@@ -171,9 +173,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                         )
                     return True
 
-            resp_sub = asyncio.ensure_future(
-                subscribe_response_topic_wrapper(LIABILITY_REPORT_TOPIC, callback, 120)
-            )
+            resp_sub = asyncio.ensure_future(subscribe_response_topic_wrapper(LIABILITY_REPORT_TOPIC, callback, 120))
             await asyncio.sleep(1)
 
             kwh = hass.data[DOMAIN][entry.entry_id].to_compensate
@@ -186,7 +186,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 ipfs_auth=hass.data[DOMAIN]["ipfs_gw_auth"](),
                 promisee=hass.data[DOMAIN]["account_addr"],
                 liability_signer=hass.data[DOMAIN]["liability"],
-                hass=hass
+                hass=hass,
             )
 
             await resp_sub
@@ -196,7 +196,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 domain="notify",
                 service="persistent_notification",
                 service_data=dict(
-                    message=f"Failed to compensate kWh. Robonomics PubSub timeout. Check amount of kWh to compensate in case assets were burned.",
+                    message=f"Failed to compensate kWh. Robonomics PubSub timeout. "
+                            f"Check amount of kWh to compensate in case assets were burned.",
                     title="PubSub timeout!",
                 ),
             )
