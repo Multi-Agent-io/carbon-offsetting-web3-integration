@@ -1,0 +1,31 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Carbon Offsetting integration is already configured"
+        },
+        "error": {
+            "unknown": "Unexpected error",
+            "invalid_seed": "Invalid controller seed",
+            "invalid_ipfs_creds": "Invalid IPFS credentials. Either tick web3-auth or specify both auth and pwd",
+            "warnings": "You should tick all points before using Carbon Offsetting Integration"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "warn_data_sending": "The integration will send the coordinates of your home and energy consumption data (total kW*h consumed) to the remote server and use them to calculate the amount of carbon units to burn."
+                },
+            "description": "To use Carbon Offsetting Integration you should know the following:"
+            },
+            "conf": {
+                "data": {
+                    "admin_seed_secret": "Robonomics account seed",
+                    "ipfs_gw": "IPFS gateway address in multiaddr format",
+                    "is_ipfs_gw_w3": "Whether specified IPFS gateway supports Web3 auth headers",
+                    "ipfs_gw_auth": "IPFS gateway auth login",
+                    "ipfs_gw_pwd_secret": "IPFS gateway auth pwd"
+                },
+                "description": "Add your Robonomics account seed phrases. You can also Specify remote IPFS gateway and whether it supports Web3 auth headers."
+            }
+        }
+    }
+}

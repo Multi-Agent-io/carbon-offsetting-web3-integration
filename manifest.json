@@ -1,0 +1,13 @@
+{
+  "domain": "co2_offsetting_web3",
+  "name": "Web3 Carbon Footprint Offsetting",
+  "version": "0.0.1",
+  "integration_type": "service",
+  "documentation": "https://github.com/PaTara43/co2_offsetting_web3",
+  "issue_tracker": "https://github.com/PaTara43/co2_offsetting_web3/issues",
+  "dependencies": ["notify"],
+  "codeowners": ["@PaTara43"],
+  "config_flow": true,
+  "requirements": ["IPFS-Toolkit~=0.4.3", "robonomics-interface~=1.6.0"],
+  "iot_class": "cloud_push"
+}

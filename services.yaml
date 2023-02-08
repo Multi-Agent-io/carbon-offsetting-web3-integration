@@ -1,0 +1,6 @@
+get_amount_of_kwh_to_compensate:
+  name: Get amount of kWh uncompensated.
+  description: Sends a request to an offsetting agent, providing current kWh consumption, waits for a response with uncompensated amount of kWh.
+compensate_kwh:
+  name: Compensate an amount of produced CO2 by burning carbon units
+  description: Send a burn request to an offsetting agent providing your country and total kWh consumed.
