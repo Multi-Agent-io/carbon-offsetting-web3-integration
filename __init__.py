@@ -10,14 +10,19 @@ from robonomicsinterface import Account, Liability, web_3_auth
 from substrateinterface import KeypairType
 
 from .client import Client
-from .const import (CONF_ADMIN_SEED, CONF_IPFS_GATEWAY_AUTH,
-                    CONF_IPFS_GATEWAY_PWD, CONF_IPFS_GW, CONF_IS_W3GW, DOMAIN,
-                    IPFS_GW, LAST_COMPENSATION_DATE_RESPONSE_TOPIC,
-                    LIABILITY_REPORT_TOPIC)
-from .utils.offsetting_client import (send_last_compensation_date_query,
-                                      send_offset_query)
-from .utils.pubsub import (parse_income_message,
-                           subscribe_response_topic_wrapper)
+from .const import (
+    CONF_ADMIN_SEED,
+    CONF_IPFS_GATEWAY_AUTH,
+    CONF_IPFS_GATEWAY_PWD,
+    CONF_IPFS_GW,
+    CONF_IS_W3GW,
+    DOMAIN,
+    IPFS_GW,
+    LAST_COMPENSATION_DATE_RESPONSE_TOPIC,
+    LIABILITY_REPORT_TOPIC,
+)
+from .utils.offsetting_client import send_last_compensation_date_query, send_offset_query
+from .utils.pubsub import parse_income_message, subscribe_response_topic_wrapper
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,15 +90,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 response = parse_income_message(obj["params"]["result"]["data"])
                 if response["address"] == hass.data[DOMAIN]["account_addr"]:
                     _LOGGER.debug(f"response in {LAST_COMPENSATION_DATE_RESPONSE_TOPIC}: {response}")
-                    hass.services.call(
-                        domain="notify",
-                        service="persistent_notification",
-                        service_data=dict(
-                            message=f"Last compensated: {response['last_compensation_date'] or 'Never'}, "
-                                    f"to compensate: {response['kwh_to_compensate']} kWh.",
-                            title="Got amount of kWh to compensate!",
-                        ),
+                    persistent_notif(
+                        hass,
+                        "Got amount of kWh to compensate!",
+                        f"Last compensated: {response['last_compensation_date'] or 'Never'}, "
+                        f"to compensate: {response['kwh_to_compensate']} kWh.",
                     )
+
                     hass.data[DOMAIN][entry.entry_id].set_to_compensate(response["kwh_to_compensate"])
                     hass.data[DOMAIN][entry.entry_id].set_total_compensated(kwh - response["kwh_to_compensate"])
                     hass.data[DOMAIN][entry.entry_id].set_last_compensation_date(
@@ -112,29 +115,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await asyncio.sleep(1)
             # TODO
             # Get kwh from energy
-            kwh = 505.0
+            kwh = 515.0
             await send_last_compensation_date_query(address=hass.data[DOMAIN]["account_addr"], kwh_current=kwh)
             await resp_sub
         except asyncio.TimeoutError:
             _LOGGER.error(f"Failed to get amount of kWh to compensate. Pubsub timeout. Notifying the user")
-            await hass.services.async_call(
-                domain="notify",
-                service="persistent_notification",
-                service_data=dict(
-                    message=f"Failed to get amount of kWh to compensate. Robonomics PubSub timeout.",
-                    title="PubSub timeout!",
-                ),
+            await persistent_notif_async(
+                hass, "PubSub timeout!", "Failed to get amount of kWh to compensate. Robonomics PubSub timeout."
             )
-
         except Exception as e:
             _LOGGER.error(f"Failed to get amount of kWh to compensate: {e}")
-            await hass.services.async_call(
-                domain="notify",
-                service="persistent_notification",
-                service_data=dict(
-                    message=f"Internal error, check logs for more detail.",
-                    title="Failed to get amount of kWh to compensate!",
-                ),
+            await persistent_notif_async(
+                hass, "Failed to get amount of kWh to compensate!", "Internal error, check logs for more detail."
             )
 
     async def compensate_kwh(call):
@@ -149,34 +141,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if response["address"] == hass.data[DOMAIN]["account_addr"]:
                     _LOGGER.debug(f"response in {LIABILITY_REPORT_TOPIC}: {response}")
                     if response["success"]:
-                        hass.services.call(
-                            domain="notify",
-                            service="persistent_notification",
-                            service_data=dict(
-                                message=f"Successfully compensated carbon footprint. "
-                                        f"See Robonomics Liability report {response['report']} for details.",
-                                title="Successful compensation!",
-                            ),
+                        persistent_notif(
+                            hass,
+                            "Successful compensation!",
+                            f"Successfully compensated carbon footprint. See Robonomics Liability report {response['report']} for details.",
                         )
                         hass.data[DOMAIN][entry.entry_id].set_to_compensate("Yet unknown")
                         hass.data[DOMAIN][entry.entry_id].set_total_compensated(response["total"])
                         hass.data[DOMAIN][entry.entry_id].set_last_compensation_date(f"{date.today()}")
                         hass.data[DOMAIN][entry.entry_id].publish_updates()
                     else:
-                        hass.services.call(
-                            domain="notify",
-                            service="persistent_notification",
-                            service_data=dict(
-                                message=f"Failed to burn carbon units. Internal agent error.",
-                                title="Offsetting agent error!",
-                            ),
+                        persistent_notif(
+                            hass, "Offsetting agent error!", "Failed to burn carbon units. Internal agent error."
                         )
+
                     return True
+
+            kwh = hass.data[DOMAIN][entry.entry_id].to_compensate
 
             resp_sub = asyncio.ensure_future(subscribe_response_topic_wrapper(LIABILITY_REPORT_TOPIC, callback, 120))
             await asyncio.sleep(1)
 
-            kwh = hass.data[DOMAIN][entry.entry_id].to_compensate
             coordinates = geo_str
             _LOGGER.debug(f"Set kwh to {kwh}, coordinates to {coordinates}.")
             await send_offset_query(
@@ -192,26 +177,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await resp_sub
         except asyncio.TimeoutError:
             _LOGGER.error(f"Failed to compensate kWh. Pubsub timeout. Notifying the user.")
-            await hass.services.async_call(
-                domain="notify",
-                service="persistent_notification",
-                service_data=dict(
-                    message=f"Failed to compensate kWh. Robonomics PubSub timeout. "
-                            f"Check amount of kWh to compensate in case assets were burned.",
-                    title="PubSub timeout!",
-                ),
+            await persistent_notif_async(
+                hass,
+                "PubSub timeout!",
+                "Failed to compensate kWh. Robonomics PubSub timeout. Check amount of kWh to compensate in case assets were burned.",
             )
-
         except Exception as e:
             _LOGGER.error(f"Failed to compensate kWh: {e}")
-            await hass.services.async_call(
-                domain="notify",
-                service="persistent_notification",
-                service_data=dict(
-                    message=f"Internal error, check logs for more detail.",
-                    title="Failed to compensate!",
-                ),
-            )
+            await persistent_notif_async(hass, "Failed to compensate!", f"Internal error, check logs for more detail.")
 
     hass.services.async_register(DOMAIN, "get_amount_of_kwh_to_compensate", get_kwh_to_compensate)
     hass.services.async_register(DOMAIN, "compensate_kwh", compensate_kwh)
@@ -227,3 +200,25 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
+
+def persistent_notif(hass, title, message):
+    hass.services.call(
+        domain="notify",
+        service="persistent_notification",
+        service_data=dict(
+            message=message,
+            title=title,
+        ),
+    )
+
+
+async def persistent_notif_async(hass, title, message):
+    await hass.services.async_call(
+        domain="notify",
+        service="persistent_notification",
+        service_data=dict(
+            message=message,
+            title=title,
+        ),
+    )

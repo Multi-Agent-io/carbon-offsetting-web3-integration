@@ -10,9 +10,15 @@ from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from robonomicsinterface import Account
 
-from .const import (CONF_ADMIN_SEED, CONF_IPFS_GATEWAY_AUTH,
-                    CONF_IPFS_GATEWAY_PWD, CONF_IPFS_GW, CONF_IS_W3GW,
-                    CONF_WARN_DATA_SENDING, DOMAIN)
+from .const import (
+    CONF_ADMIN_SEED,
+    CONF_IPFS_GATEWAY_AUTH,
+    CONF_IPFS_GATEWAY_PWD,
+    CONF_IPFS_GW,
+    CONF_IS_W3GW,
+    CONF_WARN_DATA_SENDING,
+    DOMAIN,
+)
 from .exceptions import InvalidIPFSCreds, InvalidSeed
 
 _LOGGER = logging.getLogger(__name__)

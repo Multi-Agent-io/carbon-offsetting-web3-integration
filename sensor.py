@@ -2,9 +2,7 @@
 
 import logging
 
-from homeassistant.components.sensor import (SensorEntity,
-                                             SensorEntityDescription,
-                                             SensorStateClass)
+from homeassistant.components.sensor import SensorEntity, SensorEntityDescription, SensorStateClass
 from homeassistant.const import DEVICE_CLASS_ENERGY, ENERGY_KILO_WATT_HOUR
 
 from .const import DOMAIN
@@ -115,7 +113,7 @@ class TotalCompensated(SensorBase):
             name=self._attr_name,
             native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
             device_class=DEVICE_CLASS_ENERGY,
-            state_class=SensorStateClass.MEASUREMENT,
+            state_class=SensorStateClass.TOTAL,
             icon="mdi:leaf-circle",
         )
         self._state = 0
