@@ -18,13 +18,14 @@
             },
             "conf": {
                 "data": {
+                    "energy_entities": "Energy entities representing total devices' consumption.",
                     "admin_seed_secret": "Robonomics account seed",
                     "ipfs_gw": "IPFS gateway address in multiaddr format. Defaults to local.",
                     "is_ipfs_gw_w3": "Whether specified IPFS gateway supports Web3 auth headers",
                     "ipfs_gw_auth": "IPFS gateway auth login",
                     "ipfs_gw_pwd_secret": "IPFS gateway auth pwd"
                 },
-                "description": "Add your Robonomics account seed phrase. You can also specify IPFS gateway and whether it supports Web3 auth headers."
+            "description": "Choose energy type entities to track total energy consumption. Add your Robonomics account seed phrase. You can also specify IPFS gateway and whether it supports Web3 auth headers."
             }
         }
     }

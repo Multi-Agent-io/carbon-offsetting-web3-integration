@@ -2,8 +2,9 @@
 
 DOMAIN = "co2_offsetting_web3"
 CONF_IP = "ip"
-PLATFORMS = []
+PLATFORMS = ["sensor"]
 
+CONF_ENERGY_ENTITIES = "energy_entities"
 CONF_ADMIN_SEED = "admin_seed_secret"
 CONF_WARN_DATA_SENDING = "warn_data_sending"
 CONF_IPFS_GW = "ipfs_gw"

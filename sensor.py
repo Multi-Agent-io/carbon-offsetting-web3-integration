@@ -113,7 +113,7 @@ class TotalCompensated(SensorBase):
             name=self._attr_name,
             native_unit_of_measurement=ENERGY_KILO_WATT_HOUR,
             device_class=DEVICE_CLASS_ENERGY,
-            state_class=SensorStateClass.TOTAL,
+            state_class=SensorStateClass.MEASUREMENT,
             icon="mdi:leaf-circle",
         )
         self._state = 0

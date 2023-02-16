@@ -8,9 +8,11 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers.selector import selector
 from robonomicsinterface import Account
 
 from .const import (
+    CONF_ENERGY_ENTITIES,
     CONF_ADMIN_SEED,
     CONF_IPFS_GATEWAY_AUTH,
     CONF_IPFS_GATEWAY_PWD,
@@ -25,6 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_CONF_DATA_SCHEMA = vol.Schema(
     {
+        vol.Required(CONF_ENERGY_ENTITIES): selector({"entity": {"multiple": True}}),
         vol.Required(CONF_ADMIN_SEED): str,
         vol.Optional(CONF_IPFS_GW): str,
         vol.Optional(CONF_IS_W3GW): bool,

@@ -11,6 +11,7 @@ from substrateinterface import KeypairType
 
 from .client import Client
 from .const import (
+    CONF_ENERGY_ENTITIES,
     CONF_ADMIN_SEED,
     CONF_IPFS_GATEWAY_AUTH,
     CONF_IPFS_GATEWAY_PWD,
@@ -20,13 +21,12 @@ from .const import (
     IPFS_GW,
     LAST_COMPENSATION_DATE_RESPONSE_TOPIC,
     LIABILITY_REPORT_TOPIC,
+    PLATFORMS,
 )
 from .utils.offsetting_client import send_last_compensation_date_query, send_offset_query
 from .utils.pubsub import parse_income_message, subscribe_response_topic_wrapper
 
 _LOGGER = logging.getLogger(__name__)
-
-PLATFORMS: list[str] = ["sensor"]
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
@@ -41,6 +41,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Executing hass.data.setdefault")
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = Client(hass)
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+
+    hass.data[DOMAIN]["energy_entities"] = conf[CONF_ENERGY_ENTITIES]
+    _LOGGER.debug(f"Set energy entities to: {hass.data[DOMAIN]['energy_entities']}")
 
     geo = hass.states.get("zone.home")
     geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
@@ -115,7 +118,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             await asyncio.sleep(1)
             # TODO
             # Get kwh from energy
-            kwh = 515.0
+            kwh = 0.0
+            for energy_entity in hass.data[DOMAIN]["energy_entities"]:
+                try:
+                    state = float(hass.states.get(energy_entity).state)
+                    _LOGGER.debug(f"Adding entity {energy_entity} state {state} to total kwh.")
+                    kwh += state
+                except Exception as e:
+                    _LOGGER.error(f"Error adding entity {energy_entity} state to total kwh: {e}")
+            _LOGGER.debug(f"Total kWh: {kwh}")
             await send_last_compensation_date_query(address=hass.data[DOMAIN]["account_addr"], kwh_current=kwh)
             await resp_sub
         except asyncio.TimeoutError:
@@ -158,7 +169,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     return True
 
             kwh = hass.data[DOMAIN][entry.entry_id].to_compensate
-
+            if kwh == 0.0:
+                await persistent_notif_async(hass, "Nothing to compensate!", "You have no kWh to compensate.")
+                return
             resp_sub = asyncio.ensure_future(subscribe_response_topic_wrapper(LIABILITY_REPORT_TOPIC, callback, 120))
             await asyncio.sleep(1)
 
