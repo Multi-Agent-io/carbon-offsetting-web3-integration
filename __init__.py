@@ -116,8 +116,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 subscribe_response_topic_wrapper(LAST_COMPENSATION_DATE_RESPONSE_TOPIC, callback, 10)
             )
             await asyncio.sleep(1)
-            # TODO
-            # Get kwh from energy
             kwh = 0.0
             for energy_entity in hass.data[DOMAIN]["energy_entities"]:
                 try:

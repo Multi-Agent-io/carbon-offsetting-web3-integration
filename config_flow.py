@@ -27,7 +27,7 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_CONF_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_ENERGY_ENTITIES): selector({"entity": {"multiple": True}}),
+        vol.Required(CONF_ENERGY_ENTITIES): selector({"entity": {"multiple": True, "device_class": "energy"}}),
         vol.Required(CONF_ADMIN_SEED): str,
         vol.Optional(CONF_IPFS_GW): str,
         vol.Optional(CONF_IS_W3GW): bool,
