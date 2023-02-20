@@ -18,7 +18,8 @@
             },
             "conf": {
                 "data": {
-                    "energy_entities": "Energy entities representing total devices' consumption.",
+                    "energy_consumption_entities": "Energy entities representing total devices' consumption.",
+                    "energy_production_entities": "Energy entities representing total energy production of your home, the ones not to compensate.",
                     "admin_seed_secret": "Robonomics account seed",
                     "ipfs_gw": "IPFS gateway address in multiaddr format. Defaults to local.",
                     "is_ipfs_gw_w3": "Whether specified IPFS gateway supports Web3 auth headers",

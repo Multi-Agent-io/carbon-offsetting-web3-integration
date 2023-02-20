@@ -11,7 +11,8 @@ from substrateinterface import KeypairType
 
 from .client import Client
 from .const import (
-    CONF_ENERGY_ENTITIES,
+    CONF_ENERGY_CONSUMPTION_ENTITIES,
+    CONF_ENERGY_PRODUCTION_ENTITIES,
     CONF_ADMIN_SEED,
     CONF_IPFS_GATEWAY_AUTH,
     CONF_IPFS_GATEWAY_PWD,
@@ -42,8 +43,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = Client(hass)
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
 
-    hass.data[DOMAIN]["energy_entities"] = conf[CONF_ENERGY_ENTITIES]
-    _LOGGER.debug(f"Set energy entities to: {hass.data[DOMAIN]['energy_entities']}")
+    hass.data[DOMAIN]["energy_consumption_entities"] = conf[CONF_ENERGY_CONSUMPTION_ENTITIES]
+    _LOGGER.debug(f"Set energy consumption entities to: {hass.data[DOMAIN]['energy_consumption_entities']}")
+    hass.data[DOMAIN]["energy_production_entities"] = conf[CONF_ENERGY_PRODUCTION_ENTITIES]
+    _LOGGER.debug(f"Set energy production entities to: {hass.data[DOMAIN]['energy_production_entities']}")
 
     geo = hass.states.get("zone.home")
     geo_str = f'{geo.attributes["latitude"]}, {geo.attributes["longitude"]}'
@@ -116,14 +119,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 subscribe_response_topic_wrapper(LAST_COMPENSATION_DATE_RESPONSE_TOPIC, callback, 10)
             )
             await asyncio.sleep(1)
+
             kwh = 0.0
-            for energy_entity in hass.data[DOMAIN]["energy_entities"]:
+            for energy_consumption_entity in hass.data[DOMAIN]["energy_consumption_entities"]:
                 try:
-                    state = float(hass.states.get(energy_entity).state)
-                    _LOGGER.debug(f"Adding entity {energy_entity} state {state} to total kwh.")
+                    state = float(hass.states.get(energy_consumption_entity).state)
+                    _LOGGER.debug(f"Adding entity {energy_consumption_entity} state {state} to total kwh.")
                     kwh += state
                 except Exception as e:
-                    _LOGGER.error(f"Error adding entity {energy_entity} state to total kwh: {e}")
+                    _LOGGER.error(f"Error adding entity {energy_consumption_entity} state to total kwh: {e}")
+
+            for energy_production_entity in hass.data[DOMAIN]["energy_production_entities"]:
+                try:
+                    state = float(hass.states.get(energy_production_entity).state)
+                    _LOGGER.debug(f"Subtracting entity {energy_production_entity} state {state} from total kwh.")
+                    kwh -= state
+                except Exception as e:
+                    _LOGGER.error(f"Error subtracting entity {energy_production_entity} from to total kwh: {e}")
+
             _LOGGER.debug(f"Total kWh: {kwh}")
             await send_last_compensation_date_query(address=hass.data[DOMAIN]["account_addr"], kwh_current=kwh)
             await resp_sub
