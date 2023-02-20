@@ -13,7 +13,13 @@ class Client:
     """Offsetting Client class."""
 
     def __init__(self, hass: HomeAssistant) -> None:
-        """Init."""
+        """
+        Class init function, sets all class attributes.
+
+        :param hass: HomeAssistant instance.
+
+        """
+
         _LOGGER.debug(f"Initiating Client")
         self.name = "Carbon Offsetting Client"
         self._id = "carbon_offsetting"
@@ -31,39 +37,77 @@ class Client:
 
     @property
     def client_id(self) -> str:
-        """Return ID for client."""
+        """
+        Return ID for client.
+
+        """
+
         return self._id
 
     @property
     def to_compensate(self) -> float | str:
-        """Amount of kWh to compensate."""
+        """
+        Amount of kWh to compensate.
+
+        """
+
         return self._to_compensate
 
-    def set_to_compensate(self, val):
-        """Set amount of kWh to compensate."""
+    def set_to_compensate(self, val: float):
+        """
+        Set amount of kWh to compensate.
+
+        :param val: New sensor value.
+
+        """
+
         self._to_compensate = val
 
     @property
     def last_compensation_date(self) -> str:
-        """Last compensation date."""
+        """
+        Last compensation date.
+
+        """
+
         return self._last_compensation_date
 
-    def set_last_compensation_date(self, val):
-        """Set last compensation date."""
+    def set_last_compensation_date(self, val: str):
+        """
+        Set last compensation date.
+
+        :param val: New sensor value.
+
+        """
+
         self._last_compensation_date = val
 
     @property
     def total_compensated(self) -> float | str:
-        """Amount of kWh total compensated."""
+        """
+        Amount of kWh total compensated.
+
+        """
+
         return self._total_compensated
 
-    def set_total_compensated(self, val):
-        """Set amount of kWh total compensated."""
+    def set_total_compensated(self, val: float):
+        """
+        Set amount of kWh total compensated.
+
+        :param val: New sensor value.
+
+        """
+
         self._total_compensated = val
 
     @property
     def online(self) -> float:
-        """Client is online."""
+        """
+        Client is online.
+
+        """
+
         return True
 
     def register_callback(self, callback) -> None:

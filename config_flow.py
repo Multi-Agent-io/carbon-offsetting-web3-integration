@@ -1,4 +1,5 @@
 """Config flow for Web3 Carbon Footprint Offsetting Integration."""
+
 from __future__ import annotations
 
 import logging
@@ -12,9 +13,9 @@ from homeassistant.helpers.selector import selector
 from robonomicsinterface import Account
 
 from .const import (
+    CONF_ADMIN_SEED,
     CONF_ENERGY_CONSUMPTION_ENTITIES,
     CONF_ENERGY_PRODUCTION_ENTITIES,
-    CONF_ADMIN_SEED,
     CONF_IPFS_GATEWAY_AUTH,
     CONF_IPFS_GATEWAY_PWD,
     CONF_IPFS_GW,
@@ -28,8 +29,12 @@ _LOGGER = logging.getLogger(__name__)
 
 STEP_CONF_DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_ENERGY_CONSUMPTION_ENTITIES): selector({"entity": {"multiple": True, "device_class": "energy"}}),
-        vol.Required(CONF_ENERGY_PRODUCTION_ENTITIES): selector({"entity": {"multiple": True, "device_class": "energy"}}),
+        vol.Required(CONF_ENERGY_CONSUMPTION_ENTITIES): selector(
+            {"entity": {"multiple": True, "device_class": "energy"}}
+        ),
+        vol.Required(CONF_ENERGY_PRODUCTION_ENTITIES): selector(
+            {"entity": {"multiple": True, "device_class": "energy"}}
+        ),
         vol.Required(CONF_ADMIN_SEED): str,
         vol.Optional(CONF_IPFS_GW): str,
         vol.Optional(CONF_IS_W3GW): bool,
@@ -47,9 +52,12 @@ STEP_WARN_DATA_SCHEMA = vol.Schema(
 
 def is_valid_sub_admin_seed(sub_admin_seed: str) -> Optional[ValueError]:
     """
+    Check whether supplied seed is correct.
 
-    :param sub_admin_seed:
-    :return:
+    :param sub_admin_seed: HomeAssistant user's Robonomics Account seed in any form.
+
+    :return: Optional error.
+
     """
     try:
         Account(sub_admin_seed)
@@ -59,10 +67,12 @@ def is_valid_sub_admin_seed(sub_admin_seed: str) -> Optional[ValueError]:
 
 def is_valid_ipfs_creds(data: dict) -> bool:
     """
+    Check whether supplied IPFS credentials are correct.
 
-    :param data:
+    :param data: User input.
 
-    :return:
+    :return: Whether provided data meets required logic.
+
     """
     if CONF_IS_W3GW in data and (CONF_IPFS_GATEWAY_AUTH in data or CONF_IPFS_GATEWAY_PWD in data):
         return False
@@ -75,8 +85,14 @@ def is_valid_ipfs_creds(data: dict) -> bool:
 
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """
-    Validate the user input allows us to connect.
-        Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
+    Validate the user input allows us to connect. Data has the keys from STEP_USER_DATA_SCHEMA with values provided
+        by the user.
+
+    :param hass: HomeAssistant instance.
+    :param data: User input.
+
+    :return: Integration setup title.
+
     """
     if await hass.async_add_executor_job(is_valid_sub_admin_seed, data[CONF_ADMIN_SEED]):
         raise InvalidSeed
@@ -94,6 +110,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        """
+        User step of integration installation. Shows warnings.
+
+        :param user_input: User input.
+
+        :return: Setup entry from ``async_step_conf``
+
+        """
+
         errors = {}
         device_unique_id = "co2_offsetting_web3"
         await self.async_set_unique_id(device_unique_id)
@@ -107,7 +132,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_conf()
 
     async def async_step_conf(self, user_input: dict[str, Any] | None = None) -> FlowResult:
-        """Handle the initial step."""
+        """
+        Configuration step of integration installation. Shows input form to pick entities and set Robonomics and IPFS
+            creds.
+
+        :param user_input: User input.
+
+        :return: Setup entry.
+
+        """
         if user_input is None:
             return self.async_show_form(step_id="conf", data_schema=STEP_CONF_DATA_SCHEMA)
 

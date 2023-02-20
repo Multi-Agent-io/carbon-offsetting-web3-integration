@@ -3,15 +3,24 @@
 import logging
 
 from homeassistant.components.sensor import SensorEntity, SensorEntityDescription, SensorStateClass
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import DEVICE_CLASS_ENERGY, ENERGY_KILO_WATT_HOUR
+from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
-    """Add sensors for passed config_entry in HA."""
+async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities):
+    """
+    Add sensors for passed config_entry in HA.
+
+    :param hass: HomeAssistant instance.
+    :param config_entry: Integration configuration data.
+    :param async_add_entities: Add entities service function.
+
+    """
     _LOGGER.debug("Start sensors setup")
     client = hass.data[DOMAIN][config_entry.entry_id]
     new_devices = [ToCompensate(client), LastCompensationDate(client), TotalCompensated(client)]
@@ -20,10 +29,20 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 
 class SensorBase(SensorEntity):
+    """
+    Base sensor class to define common methods.
+
+    """
+
     should_poll = False
 
     def __init__(self, client):
-        """Initialize the sensor."""
+        """
+        Initialize the sensor.
+
+        :param client: Client device, defined in ``client.py``
+
+        """
         self._client = client
 
     @property
@@ -52,12 +71,23 @@ class SensorBase(SensorEntity):
 
 
 class ToCompensate(SensorBase):
+    """
+    Sensor representing amount of kWh left to compensate.
+
+    """
+
     def __init__(self, client):
-        """Initialize the sensor."""
+        """
+        Initialize the sensor.
+
+        :param client: Client device, defined in ``client.py``
+
+        """
+
         super().__init__(client)
         _LOGGER.debug(f"Initiating ToCompensate")
 
-        self._attr_unique_id = f"{self._client._id}_to_compensate"
+        self._attr_unique_id = f"{self._client.client_id}_to_compensate"
 
         # The name of the entity
         self._attr_name = f"To compensate"
@@ -79,12 +109,22 @@ class ToCompensate(SensorBase):
 
 
 class LastCompensationDate(SensorBase):
+    """
+    Sensor, representing last compensation date.
+
+    """
+
     def __init__(self, client):
-        """Initialize the sensor."""
+        """ "
+        Initialize the sensor.
+
+        :param client: Client device, defined in ``client.py``
+
+        """
         super().__init__(client)
         _LOGGER.debug(f"Initiating LastCompensationDate")
 
-        self._attr_unique_id = f"{self._client._id}_last_compensation_date"
+        self._attr_unique_id = f"{self._client.client_id}_last_compensation_date"
 
         # The name of the entity
         self._attr_name = f"Last compensation date"
@@ -99,8 +139,17 @@ class LastCompensationDate(SensorBase):
 
 
 class TotalCompensated(SensorBase):
+    """
+    Sensor representing total amount of kWh compensated.
+    """
+
     def __init__(self, client):
-        """Initialize the sensor."""
+        """ "
+        Initialize the sensor.
+
+        :param client: Client device, defined in ``client.py``
+
+        """
         super().__init__(client)
         _LOGGER.debug(f"Initiating TotalCompensated")
 

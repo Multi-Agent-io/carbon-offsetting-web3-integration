@@ -1,4 +1,5 @@
 """Web3 Carbon Footprint Offsetting Integration."""
+
 import asyncio
 import logging
 from datetime import date
@@ -11,9 +12,9 @@ from substrateinterface import KeypairType
 
 from .client import Client
 from .const import (
+    CONF_ADMIN_SEED,
     CONF_ENERGY_CONSUMPTION_ENTITIES,
     CONF_ENERGY_PRODUCTION_ENTITIES,
-    CONF_ADMIN_SEED,
     CONF_IPFS_GATEWAY_AUTH,
     CONF_IPFS_GATEWAY_PWD,
     CONF_IPFS_GW,
@@ -31,12 +32,29 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """
+    HomeAssistant setup function.
+
+    :param hass: HomeAssistant instance.
+    :param config: Config.
+
+    :return: Success flag.
+
+    """
     _LOGGER.debug(f"setup data: {config.get(DOMAIN)}")
     return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up from a config entry."""
+    """Set up from a config entry.
+
+    :param hass: HomeAssistant instance.
+    :param entry: Entry config.
+
+    :return: Success flag.
+
+    """
+
     _LOGGER.debug("Starting setup in init")
     conf = entry.data
     _LOGGER.debug("Executing hass.data.setdefault")
@@ -61,6 +79,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if CONF_IS_W3GW in conf:
 
         def ipfs_w3gw_auth_wrapper():
+            """
+            Gateway wrapper to get fresh web3_auth header.
+
+            :return: web3_auth header.
+            """
             return web_3_auth(conf[CONF_ADMIN_SEED])
 
         hass.data[DOMAIN]["ipfs_gw_auth"] = ipfs_w3gw_auth_wrapper
@@ -69,6 +92,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     elif CONF_IPFS_GATEWAY_AUTH in conf:
 
         def ipfs_auth_wrapper():
+            """
+            Gateway wrapper to get auth header.
+
+            :return: Auth header.
+            """
             return conf[CONF_IPFS_GATEWAY_AUTH], conf[CONF_IPFS_GATEWAY_PWD]
 
         hass.data[DOMAIN]["ipfs_gw_auth"] = ipfs_auth_wrapper
@@ -76,6 +104,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
 
         def ipfs_empty_auth_wrapper():
+            """
+            Gateway wrapper to get empty auth header.
+
+            :return: Empty header.
+            """
             return ()
 
         hass.data[DOMAIN]["ipfs_gw_auth"] = ipfs_empty_auth_wrapper
@@ -87,12 +120,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def get_kwh_to_compensate(call):
         """
+        HomeAssistant service call instructions to send PubSUb query to get the amount of kWh to compensate based on
+        user's Robonomics account address and current total kWh consumption. Notify user if
 
-        :param call:
+        :param call: Service call parameters.
+
         """
         try:
 
-            def callback(obj, update_nr, subscription_id):
+            def callback(obj, update_nr, subscription_id) -> bool:
+                """
+                PubSub subscription callback function to execute at new message arrival. Adds response data to
+                HomeAssistant sensor entities.
+
+                :param obj: Message object.
+                :param update_nr: Events iterator.
+                :param subscription_id: Subscription ID.
+
+                :return: True when message got - to cancel subscription.
+
+                """
+
                 response = parse_income_message(obj["params"]["result"]["data"])
                 if response["address"] == hass.data[DOMAIN]["account_addr"]:
                     _LOGGER.debug(f"response in {LAST_COMPENSATION_DATE_RESPONSE_TOPIC}: {response}")
@@ -153,12 +201,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     async def compensate_kwh(call):
         """
+        HomeAssistant service call instructions to send PubSub query to compensate fossil-generated CO2 based on
+        previous call data and home coordinates. Forms liability parameters message and sends it via PubSub.
 
-        :param call:
+        :param call: Service call parameters.
+
         """
         try:
 
             def callback(obj, update_nr, subscription_id):
+                """
+                PubSub subscription callback function to execute at new message arrival. Adds response data to
+                HomeAssistant sensor entities.
+
+                :param obj: Message object.
+                :param update_nr: Events iterator.
+                :param subscription_id: Subscription ID.
+
+                :return: True when message got - to cancel subscription.
+
+                """
                 response = parse_income_message(obj["params"]["result"]["data"])
                 if response["address"] == hass.data[DOMAIN]["account_addr"]:
                     _LOGGER.debug(f"response in {LIABILITY_REPORT_TOPIC}: {response}")
@@ -195,7 +257,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 ipfs_auth=hass.data[DOMAIN]["ipfs_gw_auth"](),
                 promisee=hass.data[DOMAIN]["account_addr"],
                 liability_signer=hass.data[DOMAIN]["liability"],
-                hass=hass,
             )
 
             await resp_sub
@@ -217,7 +278,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Unload a config entry."""
+    """Unload a config entry.
+
+    :param hass: HomeAssistant instance.
+    :param entry: Configuration entry.
+
+    :return: Success flag.
+    """
 
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
@@ -226,7 +293,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return unload_ok
 
 
-def persistent_notif(hass, title, message):
+def persistent_notif(hass: HomeAssistant, title: str, message: str):
+    """
+    Create persistent notification in HomeAssistant UI.
+
+    :param hass: HomeAssistant instance.
+    :param title: Notification title.
+    :param message: Notification message.
+    """
     hass.services.call(
         domain="notify",
         service="persistent_notification",
@@ -237,7 +311,15 @@ def persistent_notif(hass, title, message):
     )
 
 
-async def persistent_notif_async(hass, title, message):
+async def persistent_notif_async(hass: HomeAssistant, title: str, message: str):
+    """
+    Asynchronously create persistent notification in HomeAssistant UI.
+
+    :param hass: HomeAssistant instance.
+    :param title: Notification title.
+    :param message: Notification message.
+
+    """
     await hass.services.async_call(
         domain="notify",
         service="persistent_notification",

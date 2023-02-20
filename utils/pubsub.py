@@ -1,3 +1,5 @@
+"""Robonomics PubSub functionality implementation."""
+
 import asyncio
 import logging
 import typing as tp
@@ -47,12 +49,26 @@ async def pubsub_send(topic: str, data: tp.Any):
 
 
 @to_thread
-def subscribe_response_topic(request_topic, callback):
+def subscribe_response_topic(response_topic, callback):
+    """
+    Subscribe to a query response topic in Robonomics Pubsub.
+
+    :param response_topic: Topic in PubSub to subscribe to.
+    :param callback: Callback function to execute when new message registered.
+
+    """
     account_ = Account()
     pubsub_ = PubSub(account_)
-    _LOGGER.debug(f"Subscribing to topic '{request_topic}'")
-    pubsub_.subscribe(request_topic, result_handler=callback)
+    _LOGGER.debug(f"Subscribing to topic '{response_topic}'")
+    pubsub_.subscribe(response_topic, result_handler=callback)
 
 
-async def subscribe_response_topic_wrapper(request_topic, callback, timeout):
-    await asyncio.wait_for(subscribe_response_topic(request_topic, callback), timeout=timeout)
+async def subscribe_response_topic_wrapper(response_topic, callback, timeout):
+    """
+    Timeout wrapper for PubSub subscription function.
+
+    :param response_topic: Topic in PubSub to subscribe to.
+    :param callback: Callback function to execute when new message registered.
+    :param timeout: Timeout to cancel subscription if no response got via PubSub.
+    """
+    await asyncio.wait_for(subscribe_response_topic(response_topic, callback), timeout=timeout)
