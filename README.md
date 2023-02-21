@@ -13,21 +13,28 @@ technologies.
 
 ## Installation
 1. Get integration files:
-* Using HACS:
-In the HACS panel, go to integrations and click the big orange '+' button. Search for 'Web3 Carbon Footprint Offsetting' 
-and click 'Install this repository in HACS'.
-* Manually:
-Clone the [repository](https://github.com/PaTara43/carbon-offsetting-web3-integration) into the `custop_components` folder of your Home
-Assistant config (create one if you don't have it), navigate to the folder `carbon-offsetting-web3-integration` and copy the
+
+Using HACS:
+- [Install HACS](https://hacs.xyz/docs/setup/prerequisites).
+- Navigate to `HACS->Integrations` and press three dots at the top-right. Select `Custom repositories` and paste 
+`https://github.com/Multi-Agent-io/carbon-offsetting-web3-integration`, choose `Integration` category. Press `Add`.
+- Click `Explore & Add Repositories` at the bottom-right and search for `Web3 Carbon Footprint Offsetting`. Click on it.
+- Click `Download` at bottom-right, download the integration.
+- Proceed to step 2.
+
+Manually:
+- Clone the repository into the `custop_components` folder of your Home
+Assistant config (create one if you don't have it)
+- Navigate to the folder `carbon-offsetting-web3-integration` and copy the
 integration files to the `custom_components` folder of your HomeAssistant:
 ```shell
 homeassistant@ubuntu:~/.homeassistant/custom_components$ 
 
-git clone https://github.com/PaTara43/carbon-offsetting-web3-integration
+git clone https://github.com/Multi-Agent-io/carbon-offsetting-web3-integration
 cp -r carbon-offsetting-web3-integration/custom_components/carbon_offsetting_web3 .
 rm -rf carbon-offsetting-web3-integration/
 ```
-This wierd file structure is due to HACS requirements.
+This wierd file structure is due to HACS requirements. Proceed to step 2.
 
 2. Restart HA to load the integration into HA.
 3. Go to Settings -> Devices & Services -> Integrations and click the 'Add Integration' button. Look for 'Web3 Carbon
