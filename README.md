@@ -18,7 +18,17 @@ In the HACS panel, go to integrations and click the big orange '+' button. Searc
 and click 'Install this repository in HACS'.
 * Manually:
 Clone the [repository](https://github.com/PaTara43/carbon-offsetting-web3-integration) into the `custop_components` folder of your Home
-Assistant config.
+Assistant config (create one if you don't have it), navigate to the folder `carbon-offsetting-web3-integration` and copy the
+integration files to the `custom_components` folder of your HomeAssistant:
+```shell
+homeassistant@ubuntu:~/.homeassistant/custom_components$ 
+
+git clone https://github.com/PaTara43/carbon-offsetting-web3-integration
+cp -r carbon-offsetting-web3-integration/custom_components/carbon_offsetting_web3 .
+rm -rf carbon-offsetting-web3-integration/
+```
+This wierd file structure is due to HACS requirements.
+
 2. Restart HA to load the integration into HA.
 3. Go to Settings -> Devices & Services -> Integrations and click the 'Add Integration' button. Look for 'Web3 Carbon
 Footprint Offsetting' and click to add it.
@@ -73,3 +83,12 @@ the burn happened, but never reported.
 
 Other errors require the user to check logs of the integration.
 
+To get access to logs, enable debug logs in HomeAssistant's `configuration.yml` by adding the following:
+```yaml
+logger:
+  default: warning
+  logs:
+    custom_components.carbon_offsetting_web3: debug
+```
+
+All the logs are store in `home-assistant.log`
