@@ -1,6 +1,6 @@
 """Constants for the Web3 Carbon Offsetting Integration."""
 
-DOMAIN = "co2_offsetting_web3"
+DOMAIN = "carbon_offsetting_web3"
 CONF_IP = "ip"
 PLATFORMS = ["sensor"]
 

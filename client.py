@@ -22,7 +22,7 @@ class Client:
 
         _LOGGER.debug(f"Initiating Client")
         self.name = "Carbon Offsetting Client"
-        self._id = "carbon_offsetting"
+        self._id = "carbon_offsetting_client"
         self.sw_version = "0.0.1"
         self.model = "Carbon Offsetting Client"
         self.manufacturer = "Robonomics"

@@ -17,7 +17,7 @@ technologies.
 In the HACS panel, go to integrations and click the big orange '+' button. Search for 'Web3 Carbon Footprint Offsetting' 
 and click 'Install this repository in HACS'.
 * Manually:
-Clone the [repository](https://github.com/PaTara43/co2_offsetting_web3) into the `custop_components` folder of your Home
+Clone the [repository](https://github.com/PaTara43/carbon-offsetting-web3-integration) into the `custop_components` folder of your Home
 Assistant config.
 2. Restart HA to load the integration into HA.
 3. Go to Settings -> Devices & Services -> Integrations and click the 'Add Integration' button. Look for 'Web3 Carbon

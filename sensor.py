@@ -153,7 +153,7 @@ class TotalCompensated(SensorBase):
         super().__init__(client)
         _LOGGER.debug(f"Initiating TotalCompensated")
 
-        self._attr_unique_id = f"{self._client._id}_total_compensated"
+        self._attr_unique_id = f"{self._client.client_id}_total_compensated"
 
         # The name of the entity
         self._attr_name = f"Total compensated"

@@ -99,7 +99,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     if not await hass.async_add_executor_job(is_valid_ipfs_creds, data):
         raise InvalidIPFSCreds
 
-    return {"title": "CO2 Offsetting Web3"}
+    return {"title": "Carbon Offsetting Web3"}
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -120,7 +120,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """
 
         errors = {}
-        device_unique_id = "co2_offsetting_web3"
+        device_unique_id = "carbon_offsetting_web3"
         await self.async_set_unique_id(device_unique_id)
         self._abort_if_unique_id_configured()
         if user_input is None:
