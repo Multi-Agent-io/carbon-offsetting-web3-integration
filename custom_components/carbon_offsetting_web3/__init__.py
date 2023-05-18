@@ -59,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     conf = entry.data
     _LOGGER.debug("Executing hass.data.setdefault")
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = Client(hass)
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     hass.data[DOMAIN]["energy_consumption_entities"] = conf[CONF_ENERGY_CONSUMPTION_ENTITIES]
     _LOGGER.debug(f"Set energy consumption entities to: {hass.data[DOMAIN]['energy_consumption_entities']}")
@@ -286,7 +286,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     :return: Success flag.
     """
 
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = await hass.config_entries.async_forward_entry_unload(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id)
 
